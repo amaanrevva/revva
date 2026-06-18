@@ -446,7 +446,30 @@ function lookup(){
   el.innerHTML='<div class="dr-ok"><div class="dr-tick">✓</div><div><div class="dr-t">'+v.make+' '+v.model+' · '+v.year+'</div><div class="dr-s">'+raw.toUpperCase()+' · '+v.mileage.toLocaleString('en-GB')+' mi · '+v.fuel+' · '+v.trans+' · '+v.colour+'</div></div><div class="dr-spd">1.2s ⚡</div></div><div class="dr-steps"><span class="tk">✓</span> Listing written &nbsp; <span class="tk">✓</span> Photos enhanced &nbsp; <span class="tk">✓</span> Priced vs market<br><b>→ Live on 4 platforms in 52 seconds.</b></div>';
   el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
 }
-function joinWL(e){e.preventDefault();const em=document.getElementById('wlEmail'),n=document.getElementById('wlNote');if(n&&em){n.innerHTML='<b style="color:var(--mint)">✓ You are on the list — we will email '+em.value.replace(/</g,'&lt;')+' when your spot opens.</b>';em.value=''}return false}
+/* ⚠ PASTE YOUR FORMSPREE ENDPOINT HERE — see setup steps. Looks like https://formspree.io/f/abcd1234 */
+const WAITLIST_ENDPOINT='https://formspree.io/f/mjgdqwnz';
+function joinWL(e){
+  e.preventDefault();
+  const form=e.target,em=document.getElementById('wlEmail'),n=document.getElementById('wlNote'),btn=form.querySelector('button[type="submit"]');
+  if(!em||!em.value)return false;
+  const email=em.value;
+  if(btn)btn.disabled=true;
+  if(n)n.textContent='Submitting…';
+  fetch(WAITLIST_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({email:email,page:location.pathname,source:'Revva website waitlist'})})
+    .then(res=>{
+      if(res.ok){
+        if(n)n.innerHTML='<b style="color:var(--mint)">✓ You are on the list — we will email '+email.replace(/</g,'&lt;')+' when your spot opens.</b>';
+        em.value='';
+      } else {
+        if(n)n.innerHTML='Something went wrong — email us directly at <a href="mailto:amaan@getrevva.com" style="color:var(--mint)">amaan@getrevva.com</a>.';
+      }
+    })
+    .catch(()=>{
+      if(n)n.innerHTML='Something went wrong — email us directly at <a href="mailto:amaan@getrevva.com" style="color:var(--mint)">amaan@getrevva.com</a>.';
+    })
+    .finally(()=>{if(btn)btn.disabled=false;});
+  return false;
+}
 
 
 /* ── pricing calculator (guarded) ── */
